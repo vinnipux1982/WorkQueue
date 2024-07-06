@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Producer
 {
-    internal class ActionsQueue
+    internal class ActionsStorage
     {
 
         private readonly ConcurrentDictionary<Guid,ActionInfo> _actions = [];

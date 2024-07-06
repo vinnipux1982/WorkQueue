@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Producer
+namespace Producer.Contracts
 {
-    internal class RabbitManager
+    public interface ISenderService
     {
+        Task SendAction(string payload);
     }
 }

@@ -13,7 +13,7 @@ namespace Producer
         
         private readonly TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
 
-        private readonly ActionsQueue _actionsQueue = new ActionsQueue();
+        private readonly ActionsStorage _actionsQueue = new ActionsStorage();
 
         
 
@@ -24,7 +24,7 @@ namespace Producer
             _actionsQueue.Add(clientInfo);
 
 
-
+            await completionSource.Task;
         }
 
 
