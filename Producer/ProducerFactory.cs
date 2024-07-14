@@ -1,32 +1,37 @@
-﻿using Producer.Contracts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Common;
+using Producer.Contracts;
 
-namespace Producer
+namespace Producer;
+
+public class ProducerFactory
 {
-    public class ProducerFactory
+    private static IWorker _worker;
+    private static ActionsQueue _actionQueue;
+    private static ProcessingManager _processingManager;
+    private static ReceiveResultService _receiveResultService;
+
+    public static IWorker GetWorker(string hostName, string? outQueueName = default, string? inQueueName = default)
     {
+        if (outQueueName!.Empty()) outQueueName = "OutTaskQueue";
 
-        private static IWorker _worker;
-        private static ActionsQueue _actionQueue;
-        private static ProcessingManager _processingManager;
+        if (inQueueName!.Empty()) inQueueName = "InResultQueue";
+        _actionQueue = new ActionsQueue();
+        _worker = new BackgroundWorker(_actionQueue);
+        _processingManager = new ProcessingManager(
+            _actionQueue,
+            new Sender(hostName, outQueueName!));
+        _processingManager.Start();
 
-        public static IWorker GetWorker(string hostName, string queueName)
-        {
-            _actionQueue = new ActionsQueue();
-            _worker = new BackgroundWorker(_actionQueue);
-            _processingManager = new ProcessingManager(_actionQueue, new Sender(hostName, queueName));
-            _processingManager.Start();
+        _receiveResultService = new ReceiveResultService(
+            (IReceiverService)_worker,
+            hostName,
+            inQueueName!);
 
-            return _worker;
-        }
+        return _worker;
+    }
 
-        public static void Stop()
-        {
-            _processingManager.Stop();            
-        }
+    public static void Stop()
+    {
+        _processingManager.Stop();
     }
 }

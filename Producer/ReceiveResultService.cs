@@ -1,18 +1,22 @@
 ﻿using System.Text;
+using System.Text.Json;
 using Common;
+using Producer.Contracts;
+using Producer.Models;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace Consumer;
+namespace Producer;
 
-public class SyncConsumer : IDisposable
+internal class ReceiveResultService : IDisposable
 {
     private readonly IModel _channel;
-    private readonly IHandlerMsg _handler;
+    private readonly IReceiverService _handler;
     private readonly string _hostName;
     private readonly string _queueName;
 
-    public SyncConsumer(string hostName, string queueName, IHandlerMsg handler)
+
+    public ReceiveResultService(IReceiverService handler, string hostName, string queueName)
     {
         if (hostName.Empty()) throw new ArgumentNullException("hostName");
         if (queueName.Empty()) throw new ArgumentNullException("queueName");
@@ -48,7 +52,11 @@ public class SyncConsumer : IDisposable
         Console.WriteLine("Start processing");
         var body = ea.Body.ToArray();
         var message = Encoding.UTF8.GetString(body);
-        _handler.Processing(message);
+        var userAction = JsonSerializer.Deserialize<UserAction>(message);
+
+        if (userAction == null) return;
+
+        _handler.ProcessingResult(userAction);
         Console.WriteLine($" [x] Received {message}");
     }
 }

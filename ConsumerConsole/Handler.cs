@@ -1,14 +1,12 @@
 ﻿using Consumer;
 
+namespace ConsumerConsole;
 
-namespace ConsumerConsole
+internal class Handler : IHandlerMsg
 {
-    internal class Handler : IHandlerMsg
+    public void Processing(string message)
     {
-        public void Processing(string message)
-        {
-            Console.WriteLine(message);
-            Thread.Sleep(1000);
-        }
+        Console.WriteLine(message);
+        Thread.Sleep(1000);
     }
 }
