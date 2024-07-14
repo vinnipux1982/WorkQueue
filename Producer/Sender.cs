@@ -4,9 +4,9 @@ using System.Text;
 using System.Threading.Channels;
 using Common;
 
-namespace RabbitMq
+namespace Producer
 {
-    public class Sender : Producer.Contracts.ISenderService, IDisposable
+    public class Sender : Contracts.ISenderService, IDisposable
     {
 
         private readonly IModel _channel;
@@ -14,7 +14,7 @@ namespace RabbitMq
         private readonly string _queueName;
 
 
-        public Sender(string hostName, string queueName) 
+        public Sender(string hostName, string queueName)
         {
             if (hostName.Empty())
             {
@@ -25,10 +25,10 @@ namespace RabbitMq
                 throw new ArgumentNullException("queueName");
             }
 
-            _hostName= hostName;
-            _queueName= queueName;
+            _hostName = hostName;
+            _queueName = queueName;
             var factory = new ConnectionFactory { HostName = hostName };
-            using var connection = factory.CreateConnection();
+            var connection = factory.CreateConnection();
             _channel = connection.CreateModel();
             _channel.QueueDeclare(queue: queueName,
                      durable: false,
@@ -47,10 +47,13 @@ namespace RabbitMq
         {
             var body = Encoding.UTF8.GetBytes(payload);
 
+            Console.WriteLine($"Send payload: {payload}");
+            
             _channel.BasicPublish(exchange: string.Empty,
-                                 routingKey: "hello",
+                                 routingKey: _queueName,
                                  basicProperties: null,
                                  body: body);
+            
         }
     }
 }

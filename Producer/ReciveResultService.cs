@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Producer
 {
-    internal class ReciveResultService:IDisposable
+    internal class ReciveResultService : IDisposable
     {
         private readonly IHandlerMsg _handler;
 
@@ -17,7 +17,7 @@ namespace Producer
         {
             _handler = handler;
             _syncConumer = new SyncConsumer(hostName, queueName, handler);
-            
+
         }
 
         public void Dispose()

@@ -34,8 +34,8 @@ namespace Consumer
             _hostName = hostName;
             _queueName = queueName;
             var factory = new ConnectionFactory { HostName = hostName };
-            using var connection = factory.CreateConnection();
-            var _channel = connection.CreateModel();
+            var connection = factory.CreateConnection();
+            _channel = connection.CreateModel();
 
             _channel.QueueDeclare(queue: queueName,
                                  durable: false,
@@ -43,15 +43,16 @@ namespace Consumer
                                  autoDelete: false,
                                  arguments: null);
             var consumer = new EventingBasicConsumer(_channel);
-            consumer.Received += ReciveMsg;
+            consumer.Received += ReceiveMsg;
             
-            _channel.BasicConsume(queue: "hello",
+            _channel.BasicConsume(queue: queueName,
                                  autoAck: true,
                                  consumer: consumer);
         }
 
-        private void ReciveMsg(object? sender, BasicDeliverEventArgs ea)
+        private void ReceiveMsg(object? sender, BasicDeliverEventArgs ea)
         {
+            Console.WriteLine("Start processing");
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
             _handler.Processing(message);

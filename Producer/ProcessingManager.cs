@@ -18,18 +18,30 @@ namespace Producer
 
         private readonly ISenderService _senderService;
 
+        private bool _isRun=true;
+
         public ProcessingManager(
             ActionsQueue queue,
             ISenderService senderService)
         {
             _actionStorage = new ActionsStorage();
             _queue = queue;
+            _senderService = senderService;
+        }
 
+        public void Start(CancellationToken token = default)
+        {
+            Task.Run(() => HandleInRequest(),token);
+        }
+
+        public void Stop()
+        {
+            _isRun = false;
         }
 
         public async Task HandleInRequest()
         {
-            while (true)
+            while (_isRun)
             {
 
                 var actionInfo = _queue.Dequeue();

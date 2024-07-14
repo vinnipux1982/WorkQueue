@@ -1,9 +1,10 @@
-﻿using Producer.Models;
+﻿using Producer.Contracts;
+using Producer.Models;
 using System.Collections.Concurrent;
 
 namespace Producer
 {
-    internal class BackgroundWorker : IDisposable
+    internal class BackgroundWorker : IWorker, IDisposable
     {
         private bool _disposed;
 
@@ -13,16 +14,18 @@ namespace Producer
         
         private readonly TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
 
-        private readonly ActionsStorage _actionsQueue = new ActionsStorage();
+        private readonly ActionsQueue _actionsQueue;
 
-        
+        public BackgroundWorker(ActionsQueue actionsQueue)
+        {
+            _actionsQueue = actionsQueue;
+        }
 
         public async Task SendActionAsync(string payload)
         {
             var completionSource = new TaskCompletionSource<string?>();
             var clientInfo = new ActionInfo(completionSource, payload, Guid.NewGuid());
-            _actionsQueue.Add(clientInfo);
-
+            _actionsQueue.Enqueue(clientInfo);
 
             await completionSource.Task;
         }

@@ -3,4 +3,5 @@ using Consumer;
 using ConsumerConsole;
 
 Console.WriteLine("Hello, World!");
-var consumer = new SyncConsumer("localhost", "test", new Handler());
+var consumer = new SyncConsumer("127.0.0.1", "test", new Handler());
+Console.ReadKey();
