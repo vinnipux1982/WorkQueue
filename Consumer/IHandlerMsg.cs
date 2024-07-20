@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Consumer;
 
-namespace Consumer
+public interface IHandlerMsg
 {
-    public interface IHandlerMsg
-    {
-        void Processing(string message);
-    }
+    string Processing(string message);
 }

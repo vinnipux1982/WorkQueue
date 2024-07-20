@@ -1,39 +1,26 @@
-﻿using Producer.Contracts;
+﻿using System.Collections.Concurrent;
+using Producer.Contracts;
 using Producer.Models;
-using System.Collections.Concurrent;
 
-namespace Producer
+namespace Producer;
+
+internal class BackgroundWorker(ActionsQueue actionsQueue) : IWorker
 {
-    internal class BackgroundWorker : IWorker, IDisposable
+    private readonly ConcurrentDictionary<Guid, ActionInfo> _actions = [];
+    
+    
+    public void ProcessingResult(UserAction userActionResult)
     {
-        private bool _disposed;
+        if (_actions.Remove(userActionResult.ClientId, out var actionInfo))
+            actionInfo.TaskCompletionSource.TrySetResult(userActionResult.Payload);
+    }
 
-        private BlockingCollection<Action> _actions = [];
-
-        private readonly CancellationTokenSource cancellationToken = new CancellationTokenSource();
-        
-        private readonly TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
-
-        private readonly ActionsQueue _actionsQueue;
-
-        public BackgroundWorker(ActionsQueue actionsQueue)
-        {
-            _actionsQueue = actionsQueue;
-        }
-
-        public async Task SendActionAsync(string payload)
-        {
-            var completionSource = new TaskCompletionSource<string?>();
-            var clientInfo = new ActionInfo(completionSource, payload, Guid.NewGuid());
-            _actionsQueue.Enqueue(clientInfo);
-
-            await completionSource.Task;
-        }
-
-
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
+    public async Task SendActionAsync(string payload)
+    {
+        var completionSource = new TaskCompletionSource<string?>();
+        var clientInfo = new ActionInfo(completionSource, payload, Guid.NewGuid());
+        actionsQueue.Enqueue(clientInfo);
+        _actions.TryAdd(clientInfo.ClientId, clientInfo);
+        await completionSource.Task;
     }
 }

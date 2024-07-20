@@ -1,14 +1,17 @@
-﻿using Consumer;
+﻿using System.Text.Json;
+using Consumer;
+using ConsumerConsole.DTOs;
 
+namespace ConsumerConsole;
 
-namespace ConsumerConsole
+internal class Handler : IHandlerMsg
 {
-    internal class Handler : IHandlerMsg
+    public string Processing(string message)
     {
-        public void Processing(string message)
-        {
-            Console.WriteLine(message);
-            Thread.Sleep(1000);
-        }
+        Console.WriteLine(message);
+        var messageDto = JsonSerializer.Deserialize<MessageDto>(message);
+        Thread.Sleep(15000);
+
+        return JsonSerializer.Serialize(new MessageDto(messageDto!.ClientId, messageDto.Payload + " Receive"));
     }
 }
