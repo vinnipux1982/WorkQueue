@@ -22,10 +22,11 @@ public class ProducerFactory
             new Sender(hostName, outQueueName!));
         _processingManager.Start();
 
-        _receiveResultService = new ReceiveResultService(
-            (IReceiverService)_worker,
+        _receiveResultService = new ReceiveResultService();
+        _receiveResultService.Init(
             hostName,
-            inQueueName!);
+            inQueueName!,
+            _processingManager.Processing);
 
         return _worker;
     }

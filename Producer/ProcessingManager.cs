@@ -53,7 +53,7 @@ internal class ProcessingManager
         {
             var actionInfo = _queue.Dequeue();
 
-            var message = JsonSerializer.Serialize(new { ClienId = actionInfo.ClientId, actionInfo.Payload });
+            var message = JsonSerializer.Serialize(new Message(actionInfo.ClientId, actionInfo.Payload));
             await _senderService.SendAction(message);
 
             _actionStorage.Add(actionInfo);

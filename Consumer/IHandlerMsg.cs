@@ -2,5 +2,5 @@
 
 public interface IHandlerMsg
 {
-    void Processing(string message);
+    string Processing(string message);
 }

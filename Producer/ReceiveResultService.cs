@@ -8,21 +8,39 @@ using RabbitMQ.Client.Events;
 
 namespace Producer;
 
-internal class ReceiveResultService : IDisposable
+internal class ReceiveResultService :IReceiverService, IDisposable
 {
-    private readonly IModel _channel;
-    private readonly IReceiverService _handler;
-    private readonly string _hostName;
-    private readonly string _queueName;
+    private IModel? _channel;
+    private Action<string>? _handler;
+    private string? _hostName;
+    private string? _queueName;
 
-
-    public ReceiveResultService(IReceiverService handler, string hostName, string queueName)
+    public void Dispose()
     {
-        if (hostName.Empty()) throw new ArgumentNullException("hostName");
-        if (queueName.Empty()) throw new ArgumentNullException("queueName");
+        _channel?.Dispose();
+    }
 
-        if (handler == null) throw new ArgumentNullException("queueName");
-        _handler = handler;
+    private void ReceiveMsg(object? sender, BasicDeliverEventArgs ea)
+    {
+        Console.WriteLine("Start processing");
+        var body = ea.Body.ToArray();
+        var message = Encoding.UTF8.GetString(body);
+        var userAction = JsonSerializer.Deserialize<UserAction>(message);
+
+        if (userAction == null) return;
+
+        _handler?.Invoke(message);
+        
+        Console.WriteLine($" [x] Received {message}");
+    }
+
+    public void Init(string hostName, string queueName, Action<string> handler)
+    {
+        if (hostName.Empty()) throw new ArgumentNullException(nameof(hostName));
+        if (queueName.Empty()) throw new ArgumentNullException(nameof(queueName));
+
+        _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+        
         _hostName = hostName;
         _queueName = queueName;
         var factory = new ConnectionFactory { HostName = hostName };
@@ -40,23 +58,5 @@ internal class ReceiveResultService : IDisposable
         _channel.BasicConsume(queueName,
             true,
             consumer);
-    }
-
-    public void Dispose()
-    {
-        _channel.Dispose();
-    }
-
-    private void ReceiveMsg(object? sender, BasicDeliverEventArgs ea)
-    {
-        Console.WriteLine("Start processing");
-        var body = ea.Body.ToArray();
-        var message = Encoding.UTF8.GetString(body);
-        var userAction = JsonSerializer.Deserialize<UserAction>(message);
-
-        if (userAction == null) return;
-
-        _handler.ProcessingResult(userAction);
-        Console.WriteLine($" [x] Received {message}");
     }
 }
