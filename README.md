@@ -21,9 +21,7 @@ periodically queries the results by ID, and if they are ready, they are returned
 ## Use
 
 RabbitMQ
+In the application **WorkQueue** an example of starting a task flow that is supposed to be processed on a remote machine
+In the Consumer Console application, an example of a task handler receives a task, and simulates its processing for 15 seconds.
 
-## Solve
-
-**BackgroundWorker** - отправляет запрос на обработку, присваивая ему уникальный Id, при получении ответа от сервера
-пробуждает поток клиента и отправляем ему результат обработки.
-
+It is assumed that the RabbitMQ service will be available at the addresses specified in the application.

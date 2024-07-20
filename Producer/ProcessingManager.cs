@@ -4,24 +4,13 @@ using Producer.Contracts;
 
 namespace Producer;
 
-internal class ProcessingManager
+internal class ProcessingManager(
+    ActionsQueue queue,
+    ISenderService senderService) : IDisposable
 {
-    private readonly ActionsStorage _actionStorage;
-
-    private readonly ActionsQueue _queue;
-
-    private readonly ISenderService _senderService;
+    private readonly ActionsStorage _actionStorage = new();
 
     private bool _isRun = true;
-
-    public ProcessingManager(
-        ActionsQueue queue,
-        ISenderService senderService)
-    {
-        _actionStorage = new ActionsStorage();
-        _queue = queue;
-        _senderService = senderService;
-    }
 
     public void Processing(string message)
     {
@@ -39,7 +28,7 @@ internal class ProcessingManager
 
     public void Start(CancellationToken token = default)
     {
-        Task.Run(() => HandleInRequest(), token);
+        Task.Run(()=> HandleInRequest(token), token);
     }
 
     public void Stop()
@@ -47,17 +36,24 @@ internal class ProcessingManager
         _isRun = false;
     }
 
-    public async Task HandleInRequest()
+    private async Task HandleInRequest(CancellationToken token)
     {
         while (_isRun)
         {
-            var actionInfo = _queue.Dequeue();
+            var actionInfo = queue.Dequeue();
+            token.ThrowIfCancellationRequested();
 
             var message = JsonSerializer.Serialize(new Message(actionInfo.ClientId, actionInfo.Payload));
-            await _senderService.SendAction(message);
+            await senderService.SendAction(message);
 
             _actionStorage.Add(actionInfo);
         }
+    }
+
+    public void Dispose()
+    {
+        Stop();
+        ((IDisposable)senderService).Dispose();
     }
 }
 

@@ -1,6 +1,6 @@
 ﻿namespace Producer.Contracts;
 
-public interface ISenderService
+internal interface ISenderService
 {
     Task SendAction(string payload);
 }

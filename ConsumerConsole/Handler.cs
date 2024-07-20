@@ -10,7 +10,7 @@ internal class Handler : IHandlerMsg
     {
         Console.WriteLine(message);
         var messageDto = JsonSerializer.Deserialize<MessageDto>(message);
-        Thread.Sleep(1000);
+        Thread.Sleep(15000);
 
         return JsonSerializer.Serialize(new MessageDto(messageDto!.ClientId, messageDto.Payload + " Receive"));
     }

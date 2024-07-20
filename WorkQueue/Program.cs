@@ -1,8 +1,7 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using Producer;
+﻿using Producer;
 
 Console.WriteLine("Hello, World!");
-var worker = ProducerFactory.GetWorker("127.0.0.1", "request_action","result_channel");
+var factory = new WorkerFactory("127.0.0.1", "request_action", "result_channel"); 
+var worker = factory.GetWorker();
 await worker.SendActionAsync("test");
 Console.WriteLine("end program");
