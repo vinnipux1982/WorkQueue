@@ -11,17 +11,14 @@ public class WorkerFactory:IDisposable
     private static IReceiverService? _receiveResultService;
     private static string? _hostName;
     private static string? _outQueue;
-    private static string? _inQueue;
 
-    public WorkerFactory(string hostName, string? outQueueName = default, string? inQueueName = default)
+    public WorkerFactory(string hostName, string? outQueueName = default)
     {
         if (outQueueName!.Empty()) outQueueName = "OutTaskQueue";
-
-        if (inQueueName!.Empty()) inQueueName = "InResultQueue";
-        if (hostName!.Empty()) hostName = "127.0.0.1";
+        
+        if (hostName.Empty()) hostName = "127.0.0.1";
 
         _hostName = hostName;
-        _inQueue = inQueueName!;
         _outQueue = outQueueName!;
     }
     
@@ -34,17 +31,10 @@ public class WorkerFactory:IDisposable
         
         _actionQueue = new ActionsQueue();
         _worker = new BackgroundWorker(_actionQueue);
-        _processingManager = new ProcessingManager(
-            _actionQueue,
-            new Sender(_hostName, _outQueue!));
-        _processingManager.Start();
-
-        _receiveResultService = new ReceiveResultService();
-        _receiveResultService.Init(
-            _hostName,
-            _inQueue!,
-            _processingManager.Processing);
-
+        _processingManager = new ProcessingManager(_actionQueue);
+        var sendService = new Sender(_hostName!, _outQueue!, _processingManager.Processing);
+        _processingManager.Start(sendService);
+        
         return _worker;
     }
     public void Dispose()

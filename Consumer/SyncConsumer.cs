@@ -14,15 +14,11 @@ public class SyncConsumer : IDisposable
     private readonly string _receiveHostName;
     private readonly string _receiveQueueName;
     
-    private readonly string _sendHostName;
-    private readonly string _sendQueueName;
 
     public SyncConsumer(
         string receiveHostName,
         string receiveQueueName,
-        IHandlerMsg handler,
-        string sendHostName,
-        string sendQueueName)
+        IHandlerMsg handler)
     {
         if (receiveHostName.Empty()) 
             throw new ArgumentNullException(nameof(receiveHostName));
@@ -33,13 +29,10 @@ public class SyncConsumer : IDisposable
         if (handler == null)
             throw new ArgumentNullException(nameof(handler));
         _handler = handler;
-        _sendHostName = sendHostName;
-        _sendQueueName = sendQueueName;
         _receiveHostName = receiveHostName;
-        _receiveQueueName = receiveQueueName;   
+        _receiveQueueName = receiveQueueName; 
         
         InitReceivedChannel();
-        InitSendChannel();
         
     }
 
@@ -61,47 +54,35 @@ public class SyncConsumer : IDisposable
             false,
             false,
             null);
+        _receiveChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
         var consumer = new EventingBasicConsumer(_receiveChannel);
         consumer.Received += ReceiveMsg;
 
         _receiveChannel.BasicConsume(
             _receiveQueueName,
-            true,
+            false,
             consumer);
-    }
-
-    private void InitSendChannel()
-    {
-        var factory = new ConnectionFactory { HostName = _sendHostName };
-        var connection = factory.CreateConnection();
-        _sendChannel = connection.CreateModel();
-        _sendChannel.QueueDeclare(
-            _sendQueueName,
-            false,
-            false,
-            false,
-            null);
     }
     
     private void ReceiveMsg(object? sender, BasicDeliverEventArgs ea)
     {
         Console.WriteLine("Start processing");
+        var props = ea.BasicProperties;
         var body = ea.Body.ToArray();
         var message = Encoding.UTF8.GetString(body);
+        
         var result = _handler.Processing(message);
         Console.WriteLine($" [x] Received {message}");
-        SendAction(result);
+        
+        var responseBytes = Encoding.UTF8.GetBytes(result);
+        
+        _receiveChannel.BasicPublish(exchange: string.Empty,
+            routingKey: props.ReplyTo,
+            null,
+            body: responseBytes);
+        
+        _receiveChannel!.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
     }
     
-    private void SendAction(string payload)
-    {
-        var body = Encoding.UTF8.GetBytes(payload);
-
-        Console.WriteLine($"Send payload: {payload}");
-
-        _sendChannel.BasicPublish(string.Empty,
-            _sendQueueName,
-            null,
-            body);
-    }
+    
 }
