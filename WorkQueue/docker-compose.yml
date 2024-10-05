@@ -1,0 +1,20 @@
+﻿version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    volumes:
+      - ./rabbitmq_conf:/etc/rabbitmq
+    ports:
+      - "5672:5672"  # Default RabbitMQ port
+      - "15672:15672" # RabbitMQ Management plugin port
+    networks:
+      - rabbitmq_net
+
+networks:
+  rabbitmq_net:
+    driver: bridge

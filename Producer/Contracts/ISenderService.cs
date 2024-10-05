@@ -2,5 +2,5 @@
 
 internal interface ISenderService
 {
-    Task SendAction(string payload);
+    bool SendAction(string payload);
 }

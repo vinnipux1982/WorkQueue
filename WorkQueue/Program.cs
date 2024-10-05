@@ -1,7 +1,22 @@
-﻿using Producer;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Producer;
+using WorkQueue;
 
-Console.WriteLine("Hello, World!");
-var factory = new WorkerFactory("127.0.0.1", "request_action"); 
-var worker = factory.GetWorker();
-await worker.SendActionAsync("test");
-Console.WriteLine("end program");
+Console.WriteLine($"Work queue, version {VersionInfo.Version}");
+
+var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services.AddProducerServices();
+builder.Services.AddHostedService<Worker>();
+builder.Configuration.AddProducerConfiguration();
+
+var host = builder.Build();
+
+var cancellationSource = new CancellationTokenSource();
+
+await host.RunAsync(cancellationSource.Token);
+
+cancellationSource.Cancel();
+
+Console.WriteLine("Finished");

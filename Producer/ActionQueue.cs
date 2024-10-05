@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using Producer.Models;
+using Producer.DTOs;
 
 namespace Producer;
 
@@ -12,8 +12,17 @@ internal class ActionsQueue
         _queue.Add(action);
     }
 
-    public ActionInfo Dequeue()
+    public ActionInfo Dequeue(CancellationToken stoppingToken)
     {
-        return _queue.Take();
+        return _queue.Take(stoppingToken);
+    }
+
+    public void Clear()
+    {
+        _queue.CompleteAdding();
+        while (_queue.TryTake(out var actionInfo))
+        {
+            actionInfo.TaskCompletionSource.SetCanceled();
+        }
     }
 }
