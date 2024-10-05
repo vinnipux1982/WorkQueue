@@ -10,8 +10,12 @@ internal class Handler : IHandlerMsg
     {
         Console.WriteLine(message);
         var messageDto = JsonSerializer.Deserialize<MessageDto>(message);
-        Thread.Sleep(15000);
-
-        return JsonSerializer.Serialize(new MessageDto(messageDto!.ClientId, messageDto.Payload + " Receive"));
+        Thread.Sleep(1500);
+        
+        return
+            JsonSerializer.Serialize(
+                new MessageDto(
+                    messageDto!.ClientId,
+                    $"This was processed remotely on {DateTimeOffset.UtcNow:G}:" + messageDto.Payload));
     }
 }

@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Producer", "..\Producer\Pro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Consumer", "..\Consumer\Consumer.csproj", "{D9060F24-3595-4B6D-8775-15B68B10A02E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsumerConsole", "..\ConsumerConsole\ConsumerConsole.csproj", "{9DA7F2FA-C289-4B0C-8562-95FBA449CC29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsumerConsoleApp", "..\ConsumerConsoleApp\ConsumerConsoleApp.csproj", "{9DA7F2FA-C289-4B0C-8562-95FBA449CC29}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "..\Common\Common.csproj", "{DE7C1A1D-564A-44E2-B151-29988892A494}"
 EndProject

@@ -8,7 +8,6 @@ namespace Consumer;
 public class SyncConsumer : IDisposable
 {
     private IModel? _receiveChannel;
-    private IModel? _sendChannel;
     
     private readonly IHandlerMsg _handler;
     private readonly string _receiveHostName;
@@ -25,21 +24,16 @@ public class SyncConsumer : IDisposable
         
         if (receiveQueueName.Empty()) 
             throw new ArgumentNullException(nameof(receiveQueueName));
-
-        if (handler == null)
-            throw new ArgumentNullException(nameof(handler));
+        
         _handler = handler;
         _receiveHostName = receiveHostName;
-        _receiveQueueName = receiveQueueName; 
-        
+        _receiveQueueName = receiveQueueName;
         InitReceivedChannel();
-        
     }
 
     public void Dispose()
     {
         _receiveChannel?.Dispose();
-        _sendChannel?.Dispose();
     }
 
     private void InitReceivedChannel()
@@ -48,16 +42,8 @@ public class SyncConsumer : IDisposable
         var connection = factory.CreateConnection();
         _receiveChannel = connection.CreateModel();
 
-        _receiveChannel.QueueDeclare(
-            _receiveQueueName,
-            false,
-            false,
-            false,
-            null);
-        _receiveChannel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
         var consumer = new EventingBasicConsumer(_receiveChannel);
         consumer.Received += ReceiveMsg;
-
         _receiveChannel.BasicConsume(
             _receiveQueueName,
             false,
