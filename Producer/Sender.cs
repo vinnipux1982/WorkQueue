@@ -62,7 +62,7 @@ internal class Sender : ISenderService, IDisposable
             var body = Encoding.UTF8.GetBytes(payload);
             _channel.BasicPublish(
                 string.Empty,
-                _replyQueueName,
+                _rabbitMqOptions.QueueName,
                 props,
                 body);
             return true;
@@ -85,6 +85,8 @@ internal class Sender : ISenderService, IDisposable
             var factory = new ConnectionFactory
             {
                 HostName = _rabbitMqOptions.Host,
+                UserName = _rabbitMqOptions.User,
+                Password = _rabbitMqOptions.Password,
                 AutomaticRecoveryEnabled = true,
                 NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
             };
@@ -107,7 +109,8 @@ internal class Sender : ISenderService, IDisposable
                 var response = Encoding.UTF8.GetString(body);
                 _receiveHandler.Processing(response);
             };
-            _channel.BasicConsume(consumer: consumer,
+            _channel.BasicConsume(
+                consumer: consumer,
                 queue: _replyQueueName,
                 autoAck: true);
             _isConnected = true;

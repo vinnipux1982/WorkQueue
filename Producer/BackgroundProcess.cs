@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Producer.Contracts;
+using Producer.DTOs;
 
 namespace Producer;
 
@@ -33,6 +35,10 @@ internal class BackgroundProcess(
                     {
                         logger.LogInformation(e, "Emergency shutdown of the background process");
                     }
+                    finally
+                    {
+                        queue.Clear();
+                    }
                 },
                 stoppingToken,
                 TaskCreationOptions.LongRunning);
@@ -42,10 +48,6 @@ internal class BackgroundProcess(
             Console.WriteLine(e);
             throw;
         }
-        finally
-        {
-            queue.Clear();
-        }
     }
 
     private void SendingMsg()
@@ -54,7 +56,8 @@ internal class BackgroundProcess(
         {
             var action = queue.Dequeue(_stoppingToken);
             _stoppingToken.ThrowIfCancellationRequested();
-            if (senderService.SendAction(action.Payload))
+            var message = new Message(action.ClientId, action.Payload);
+            if (senderService.SendAction(JsonSerializer.Serialize(message)))
             {
                 actionStorage.Add(action);
             }

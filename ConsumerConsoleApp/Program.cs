@@ -4,5 +4,5 @@ using Consumer;
 using ConsumerConsole;
 
 Console.WriteLine("Test consumer");
-_ = new SyncConsumer("127.0.0.1", "request_action", new Handler());
+_ = new SyncConsumer("localhost", "Test", new Handler());
 Console.ReadKey();
