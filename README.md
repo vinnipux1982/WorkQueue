@@ -1,27 +1,22 @@
 # WorkQueue
 
-Distributed computing in synchronous and asynchronous modes.
+Distributed computing in asynchronous modes.
 Task to be solved:
 There is a backend that receives requests requiring a large amount of resources. The computations themselves can take
 from 1 second to several minutes. It is necessary to delegate the processing of such requests to other servers, while
 the client that sent the request must wait for the processing results (on average, the waiting time will be around 3-10
-seconds). The library should allow organizing two modes of operation:
-• Synchronous
-• Asynchronous
+seconds). 
 
-Synchronous mode of operation:
-A client request is queued for processing on a remote server and is put into a waiting state (the connection with the
-client is not broken) until the result is obtained. Upon receiving the result, the obtained data is sent back to the
-client.
+## How it works
 
-Asynchronous mode of operation:
-The client sends a request for processing, the request is assigned an ID and returned to the client. The client
-periodically queries the results by ID, and if they are ready, they are returned.
+To run the application, specify the RabbitMQ connection settings in the RabbitMQ section. Start the application, and when prompted to enter a text string, provide the input. If the server is connected and there is a handler on the other side, a response will be returned with the message processing date. The handler has a 1.5-second delay. In the Producer project, you can find the code responsible for sending messages.
 
-## Use
+Workflow:
 
-RabbitMQ
-In the application **WorkQueue** an example of starting a task flow that is supposed to be processed on a remote machine
-In the Consumer Console application, an example of a task handler receives a task, and simulates its processing for 15 seconds.
+Upon receiving a message to send, IRabbitMqSender creates a send action and places it in a queue. To wait for the response, a TaskCompletionSource is created, and a Task is returned.
+The BackgroundProcess class, upon queueing the action, sends it to the RabbitMQ server.
+When the handler receives a response, ReceiveHandler locates the action in the store and passes the response to the task result, completing the message processing.
+Features:
 
-It is assumed that the RabbitMQ service will be available at the addresses specified in the application.
+A message lifetime is set. If it expires, the message is deleted from RabbitMQ and the message store, and an error is sent back to the sender.
+The connection to RabbitMQ is automatically restored. 

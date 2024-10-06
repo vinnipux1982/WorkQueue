@@ -7,4 +7,8 @@ internal class RabbitMqOptions
     public string QueueName { get; set; } = "Test";
 
     public int MessageExpireTime { get; set; } = 180000;
+
+    public string User { get; set; } = "guest";
+
+    public string Password { get; set; } = "guest";
 }

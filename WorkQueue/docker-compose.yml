@@ -11,7 +11,7 @@ services:
       - ./rabbitmq_conf:/etc/rabbitmq
     ports:
       - "5672:5672"  # Default RabbitMQ port
-      - "15672:15672" # RabbitMQ Management plugin port
+      - "16672:15672" # RabbitMQ Management plugin port
     networks:
       - rabbitmq_net
 
